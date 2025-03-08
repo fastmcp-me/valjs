@@ -2,12 +2,15 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
-
+  ErrorCode,
+  ListToolsRequestSchema,
+  McpError,
+  Tool,
 } from "@modelcontextprotocol/sdk/types.js";
 
 const server = new Server(
   {
-    name: "valjs-mcp",
+    name: "valtown-mcp-alpha",
     version: "1.0.0",
   },
   {
@@ -19,8 +22,45 @@ const server = new Server(
   }
 );
 
+
+// Define MCP tools
+const VALTOWN_TOOL: Tool = {
+  name: "valtown_hello_tool",
+  description: "This is a tool from the valtown MCP server.\nSays hello to the user",
+  inputSchema: {
+    type: "object",
+    properties: {
+      name: {
+        type: "string",
+        description: "The name of the person to greet.",
+      },
+    },
+    required: [],
+  },
+};
+
+
+const tools = [
+  VALTOWN_TOOL,
+];
+
+server.setRequestHandler(ListToolsRequestSchema, async () => ({
+  tools,
+}));
+
+function doHello(name: string) {
+  return {
+    message: `Hello, ${name}!`,
+  };
+}
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  return "Hello world"
+  if (request.params.name === "valtown_hello_tool") {
+    console.error("Hello tool", request.params.arguments);
+    const input = request.params.arguments as { name: string };
+    return doHello(input.name);
+  }
+  throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
 });
 
 server.onerror = (error: any) => {
@@ -35,7 +75,7 @@ process.on("SIGINT", async () => {
 async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("valjs MCP Server running on stdio");
+  console.error("valtown MCP Server running on stdio");
 }
 
 runServer().catch((error) => {

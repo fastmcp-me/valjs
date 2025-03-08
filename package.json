@@ -1,5 +1,5 @@
 {
-  "name": "valjs-mcp-beta",
+  "name": "valjs-mcp-alpha",
   "version": "2.1.0",
   "description": "ModelContextProtocol server for enhancing JSON Resumes",
   "type": "module",
@@ -14,7 +14,7 @@
     "prepublishOnly": "npm run build"
   },
   "bin": {
-    "valjs-mcp-beta": "./dist/index.cjs"
+    "valjs-mcp-alpha": "./dist/index.cjs"
   },
   "files": [
     "dist"
