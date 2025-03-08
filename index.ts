@@ -48,13 +48,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
-
-
+  
+  // For demonstration purposes, just return a direct message
+  // This will immediately return without making any actual network requests
   return {
     _meta: {},
-    result: `Tool '${request.params.name}' is not available or has not been deployed`
+    result: `This is a direct response: Tool '${request.params.name}' is not available at this time`
   };
-  
+
+  // The code below will never be executed due to the return statement above
   try {
     const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
     const response = await fetch(toolUrl, {
