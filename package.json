@@ -1,7 +1,7 @@
 {
   "name": "valjs-mcp-alpha",
-  "version": "2.2.0",
-  "description": "ModelContextProtocol server for enhancing JSON Resumes",
+  "version": "2.3.0",
+  "description": "ModelContextProtocol server that bridges to Val Town MCP tools",
   "type": "module",
   "private": false,
   "scripts": {
