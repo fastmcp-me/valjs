@@ -34,7 +34,11 @@ interface ValTownExecuteResponse {
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
-
+  // Log that we received a ListTools request
+  server.sendLoggingMessage({
+    level: "info",
+    data: "Received ListTools request",
+  });
 
   const response = await fetch("https://ajax-mcp.web.val.run", {
     method: 'GET',
@@ -43,11 +47,27 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     }
   });
   const valtownTools = await response.json() as ValTownResponse;
+  server.sendLoggingMessage({
+    level: "info",
+    data: `ListTools response received: ${JSON.stringify(valtownTools)}`
+  });
   return {    tools: valtownTools || [function blah () { return "HOW WE GET HERE"}]};
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
+  
+  // Log the incoming tool call request with detailed information
+  server.sendLoggingMessage({
+    level: "info",
+    data: `Tool call request received: name='${request.params.name}', arguments=${JSON.stringify(request.params.arguments)}`
+  });
+  
+  // Log that we're returning a direct response
+  server.sendLoggingMessage({
+    level: "info",
+    data: `Returning direct response for tool: ${request.params.name}`
+  });
   
   // For demonstration purposes, just return a direct message
   // This will immediately return without making any actual network requests
@@ -122,6 +142,12 @@ async function runServer() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("valtown MCP Server running on stdio");
+  
+  // Log server startup
+  server.sendLoggingMessage({
+    level: "info",
+    data: "Server started successfully",
+  });
 }
 
 runServer().catch((error) => {
