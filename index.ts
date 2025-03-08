@@ -31,15 +31,14 @@ interface ValTownResponse {
 server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 
-  const response = await fetch("https://esm.town/v/ajax/mcp", {
+  const response = await fetch("https://ajax-mcp.web.val.run", {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json'
     }
   });
   const valtownTools = await response.json() as ValTownResponse;
-  return {
-    tools: valtownTools.tools || [function blah () { return "HOW WE GET HERE"}]};
+  return {    tools: valtownTools || [function blah () { return "HOW WE GET HERE"}]};
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
