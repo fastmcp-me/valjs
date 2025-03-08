@@ -60,6 +60,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     });
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new McpError(ErrorCode.InvalidRequest, `Tool '${request.params.name}' was not found`);
+      }
       throw new McpError(ErrorCode.InternalError, `Val Town API error: ${response.statusText}`);
     }
 
@@ -77,8 +80,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (error instanceof McpError) {
       throw error;
     }
+    
+    if (error instanceof Error && error.message.includes('fetch failed')) {
+      throw new McpError(ErrorCode.InvalidRequest, `Tool '${request.params.name}' is not available or has not been deployed`);
+    }
+
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new McpError(ErrorCode.InternalError, `Failed to execute Val Town tool: ${errorMessage}`);
+    throw new McpError(ErrorCode.InternalError, `Tool execution failed: ${errorMessage}`);
   }
 });
 
