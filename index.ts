@@ -36,7 +36,8 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     }
   });
   const valtownTools = await response.json() as ValTownResponse;
-  return valtownTools.tools || [function blah () { return "HOW WE GET HERE"}];
+  return {
+    tools: valtownTools.tools || [function blah () { return "HOW WE GET HERE"}]};
 });
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
