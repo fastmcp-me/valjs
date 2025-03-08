@@ -28,6 +28,11 @@ interface ValTownResponse {
   tools?: Tool[];
 }
 
+interface ValTownExecuteResponse {
+  result: any;
+  error?: string;
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 
@@ -44,7 +49,37 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
   
-  return "WHATEVER";
+  try {
+    const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
+    const response = await fetch(toolUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(request.params.arguments || {})
+    });
+
+    if (!response.ok) {
+      throw new McpError(ErrorCode.InternalError, `Val Town API error: ${response.statusText}`);
+    }
+
+    const valTownResponse = await response.json() as ValTownExecuteResponse;
+    
+    if (valTownResponse.error) {
+      throw new McpError(ErrorCode.InternalError, `Val Town execution error: ${valTownResponse.error}`);
+    }
+
+    return {
+      _meta: {},
+      result: valTownResponse.result
+    };
+  } catch (error) {
+    if (error instanceof McpError) {
+      throw error;
+    }
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new McpError(ErrorCode.InternalError, `Failed to execute Val Town tool: ${errorMessage}`);
+  }
 });
 
 server.onerror = (error: any) => {
