@@ -49,8 +49,12 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
 
-  
 
+  return {
+    _meta: {},
+    result: `Tool '${request.params.name}' is not available or has not been deployed`
+  };
+  
   try {
     const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
     const response = await fetch(toolUrl, {
