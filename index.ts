@@ -48,7 +48,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
-  return {_meta: {}, result: "BLAHBLAH"};
+  return { message: "BLAHBLAH", blah: "I A< BASDASDASD"};
   try {
     const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
     const response = await fetch(toolUrl, {
