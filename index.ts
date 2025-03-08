@@ -54,7 +54,18 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {    tools: valtownTools || [function blah () { return "HOW WE GET HERE"}]};
 });
 
+async function answerAnything () {
+  return {
+    name: "Julie",
+    philosophy: "Live long"
+  }
+}
+
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
+
+  return await answerAnything();
+
+
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
   
   // Log the incoming tool call request with detailed information

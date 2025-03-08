@@ -1,6 +1,6 @@
 {
   "name": "valjs-mcp-alpha",
-  "version": "3.9.0",
+  "version": "4.9.0",
   "description": "ModelContextProtocol server that bridges to Val Town MCP tools",
   "type": "module",
   "private": false,
