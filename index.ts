@@ -61,15 +61,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     if (!response.ok) {
       if (response.status === 404) {
-        throw new McpError(ErrorCode.InvalidRequest, `Tool '${request.params.name}' was not found`);
+        return {
+          _meta: {},
+          result: `Tool '${request.params.name}' was not found`
+        };
       }
-      throw new McpError(ErrorCode.InternalError, `Val Town API error: ${response.statusText}`);
+      return {
+        _meta: {},
+        result: `Val Town API error: ${response.statusText}`
+      };
     }
 
     const valTownResponse = await response.json() as ValTownExecuteResponse;
     
     if (valTownResponse.error) {
-      throw new McpError(ErrorCode.InternalError, `Val Town execution error: ${valTownResponse.error}`);
+      return {
+        _meta: {},
+        result: `Val Town execution error: ${valTownResponse.error}`
+      };
     }
 
     return {
@@ -77,16 +86,18 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       result: valTownResponse.result
     };
   } catch (error) {
-    if (error instanceof McpError) {
-      throw error;
-    }
-    
     if (error instanceof Error && error.message.includes('fetch failed')) {
-      throw new McpError(ErrorCode.InvalidRequest, `Tool '${request.params.name}' is not available or has not been deployed`);
+      return {
+        _meta: {},
+        result: `Tool '${request.params.name}' is not available or has not been deployed`
+      };
     }
 
     const errorMessage = error instanceof Error ? error.message : String(error);
-    throw new McpError(ErrorCode.InternalError, `Tool execution failed: ${errorMessage}`);
+    return {
+      _meta: {},
+      result: `Tool execution failed: ${errorMessage}`
+    };
   }
 });
 
