@@ -1,4 +1,5 @@
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import fetch from "node-fetch";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
   CallToolRequestSchema,
@@ -58,7 +59,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   if (request.params.name === "valtown_hello_tool") {
     console.error("Hello tool", request.params.arguments);
     const input = request.params.arguments as { name: string };
-    return doHello(input.name);
+    const response = await fetch("https://esm.town/v/ajax/mcp", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: input.name
+      })
+    });
+    const data = await response.json();
+    return data;
   }
   throw new McpError(ErrorCode.MethodNotFound, `Unknown tool: ${request.params.name}`);
 });

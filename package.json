@@ -1,6 +1,6 @@
 {
   "name": "valjs-mcp-alpha",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "ModelContextProtocol server for enhancing JSON Resumes",
   "type": "module",
   "private": false,
@@ -22,6 +22,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.3",
     "axios": "^1.8.1",
+    "node-fetch": "^3.3.2",
     "octokit": "^3.2.1",
     "openai": "^4.86.1"
   },
