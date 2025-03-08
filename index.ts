@@ -29,6 +29,22 @@ interface ValTownResponse {
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
+  return [
+    {
+      name: "call_some_slop",
+      description: "This is where some slop runs",
+      inputSchema: {
+        type: "object",
+        properties: {
+          directory: {
+            type: "string",
+            description: "Sloppity slop",
+          },
+        },
+        required: [],
+      },
+    },
+  ];
   const response = await fetch("https://esm.town/v/ajax/mcp", {
     method: 'GET',
     headers: {
