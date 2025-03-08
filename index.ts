@@ -63,22 +63,15 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     data: `Tool call request received: name='${request.params.name}', arguments=${JSON.stringify(request.params.arguments)}`
   });
   
-  // Log that we're returning a direct response
-  server.sendLoggingMessage({
-    level: "info",
-    data: `Returning direct response for tool: ${request.params.name}`
-  });
-  
-  // For demonstration purposes, just return a direct message
-  // This will immediately return without making any actual network requests
-  return {
-    _meta: {},
-    result: `This is a direct response: Tool '${request.params.name}' is not available at this time`
-  };
-
-  // The code below will never be executed due to the return statement above
   try {
+    // Construct the URL for the Val Town tool
     const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
+    server.sendLoggingMessage({
+      level: "info",
+      data: `Attempting to fetch from URL: ${toolUrl}`
+    });
+    
+    // Make the API request and await the response
     const response = await fetch(toolUrl, {
       method: 'POST',
       headers: {
@@ -86,7 +79,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       },
       body: JSON.stringify(request.params.arguments || {})
     });
+    
+    server.sendLoggingMessage({
+      level: "info",
+      data: `Response status: ${response.status} ${response.statusText}`
+    });
 
+    // Handle non-OK responses
     if (!response.ok) {
       if (response.status === 404) {
         return {
@@ -100,8 +99,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    // Parse the JSON response
     const valTownResponse = await response.json() as ValTownExecuteResponse;
+    server.sendLoggingMessage({
+      level: "info",
+      data: `Response parsed: ${JSON.stringify(valTownResponse)}`
+    });
     
+    // Handle error in response
     if (valTownResponse.error) {
       return {
         _meta: {},
@@ -109,19 +114,30 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
+    // Return successful result
     return {
       _meta: {},
       result: valTownResponse.result
     };
-  } catch (error) {
+  } catch (error: unknown) {
+    // Handle fetch failed errors
     if (error instanceof Error && error.message.includes('fetch failed')) {
+      server.sendLoggingMessage({
+        level: "error",
+        data: `Fetch failed: ${error.message}`
+      });
       return {
         _meta: {},
         result: `Tool '${request.params.name}' is not available or has not been deployed`
       };
     }
 
+    // Handle all other errors
     const errorMessage = error instanceof Error ? error.message : String(error);
+    server.sendLoggingMessage({
+      level: "error",
+      data: `Error executing tool: ${errorMessage}`
+    });
     return {
       _meta: {},
       result: `Tool execution failed: ${errorMessage}`
