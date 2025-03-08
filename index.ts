@@ -51,7 +51,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
 
   return {
-    BlAH: "Get fucked"
+    message: "Hello I want to assist"
   }
 
   try {
