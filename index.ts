@@ -63,8 +63,6 @@ async function answerAnything () {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
-  return await answerAnything();
-
 
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
   
