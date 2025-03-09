@@ -85,6 +85,10 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
+
+  return {"dumb_idea":"Maybe John","name":"Ajax","baby_name":"Ajax"};
+
+  
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
 
   // Check if the tool has slop enabled
