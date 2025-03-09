@@ -8,6 +8,7 @@ import {
   McpError,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
+import { z } from "zod";
 
 const server = new Server(
   {
@@ -33,6 +34,20 @@ interface ValTownExecuteResponse {
   error?: string;
 }
 
+/**
+ * Format the ValTown response
+ * @param response The raw response from ValTown
+ * @param server The MCP server instance for logging
+ * @returns The ValTown response
+ */
+async function formatValTownResponse(response: ValTownExecuteResponse, server: Server): Promise<any> {
+  server.sendLoggingMessage({
+    level: "info",
+    data: `ValTown response: ${JSON.stringify(response)}`
+  });
+  return response;
+}
+
 server.setRequestHandler(ListToolsRequestSchema, async () => {
   // Log that we received a ListTools request
   server.sendLoggingMessage({
@@ -46,27 +61,21 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
       'Content-Type': 'application/json'
     }
   });
-  const valtownTools = await response.json() as ValTownResponse;
+  const valtownTools = await response.json();
   server.sendLoggingMessage({
     level: "info",
     data: `ListTools response received: ${JSON.stringify(valtownTools)}`
   });
-  // MCP protocol expects a specific format, so we need to wrap the tools
+
+  // Return the tools from ValTown API
   return {
-    _meta: {},
-    tools: valtownTools?.tools || [{
-      name: "fallback_tool",
-      description: "Fallback tool when Val Town is not available",
-      inputSchema: { type: "object", properties: {} }
-    }]
+    tools: valtownTools || []
   };
 });
 
 
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-
-
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
   
   // Log the incoming tool call request with detailed information
@@ -74,7 +83,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     level: "info",
     data: `Tool call request received: name='${request.params.name}', arguments=${JSON.stringify(request.params.arguments)}`
   });
-  
+
   try {
     // Construct the URL for the Val Town tool
     const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
@@ -102,13 +111,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (!response.ok) {
       if (response.status === 404) {
         return {
-          _meta: {},
-          result: `Tool '${request.params.name}' was not found`
+          message: `Tool '${request.params.name}' was not found`,
+          error: "NOT_FOUND"
         };
       }
       return {
-        _meta: {},
-        result: `Val Town API error: ${response.statusText}`
+        message: `Val Town API error: ${response.statusText}`,
+        error: "API_ERROR"
       };
     }
 
@@ -119,40 +128,25 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       data: `Response parsed: ${JSON.stringify(valTownResponse)}`
     });
     
-    // Handle error in response
-    if (valTownResponse.error) {
-      return {
-        _meta: {},
-        result: `Val Town execution error: ${valTownResponse.error}`
-      };
-    }
-
-    // Return the raw ValTown response directly
-    return valTownResponse;
+    // Call our formatter function to prepare the response
+    const formattedResponse = await formatValTownResponse(valTownResponse as ValTownExecuteResponse, server);
+    
+    // Return the enhanced response
+    return formattedResponse;
+    
   } catch (error: unknown) {
-    // Handle fetch failed errors
-    if (error instanceof Error && error.message.includes('fetch failed')) {
-      server.sendLoggingMessage({
-        level: "error",
-        data: `Fetch failed: ${error.message}`
-      });
-      return {
-        _meta: {},
-        result: `Tool '${request.params.name}' is not available or has not been deployed`
-      };
-    }
-
-    // Handle all other errors
+    // Handle all errors
     const errorMessage = error instanceof Error ? error.message : String(error);
     server.sendLoggingMessage({
       level: "error",
       data: `Error executing tool: ${errorMessage}`
     });
     return {
-      _meta: {},
-      result: `Tool execution failed: ${errorMessage}`
+      message: `Tool execution failed`,
+      error: errorMessage
     };
   }
+
 });
 
 server.onerror = (error: any) => {
