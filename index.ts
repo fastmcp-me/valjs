@@ -51,7 +51,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     level: "info",
     data: `ListTools response received: ${JSON.stringify(valtownTools)}`
   });
-  return {    tools: valtownTools || [function blah () { return "HOW WE GET HERE"}]};
+  // MCP protocol expects a specific format, so we need to wrap the tools
+  return {
+    _meta: {},
+    tools: valtownTools?.tools || [{
+      name: "fallback_tool",
+      description: "Fallback tool when Val Town is not available",
+      inputSchema: { type: "object", properties: {} }
+    }]
+  };
 });
 
 
@@ -105,7 +113,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     }
 
     // Parse the JSON response
-    const valTownResponse = await response.json() as ValTownExecuteResponse;
+    const valTownResponse = await response.json();
     server.sendLoggingMessage({
       level: "info",
       data: `Response parsed: ${JSON.stringify(valTownResponse)}`
@@ -119,7 +127,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    // Return successful result
+    // Return the raw ValTown response directly
     return valTownResponse;
   } catch (error: unknown) {
     // Handle fetch failed errors
