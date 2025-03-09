@@ -122,7 +122,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     // Return successful result
     return {
       _meta: {},
-      result: valTownResponse.result
+      result: valTownResponse
     };
   } catch (error: unknown) {
     // Handle fetch failed errors
