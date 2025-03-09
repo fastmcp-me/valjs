@@ -161,27 +161,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    // Get the raw response text first
-    const rawResponse = await response.text();
-    server.sendLoggingMessage({
-      level: "info",
-      data: `Raw response text: ${rawResponse}`
-    });
-
-    // Try to parse the JSON response
-    let valTownResponse;
-    try {
-      valTownResponse = JSON.parse(rawResponse);
-    } catch (parseError) {
-      server.sendLoggingMessage({
-        level: "error",
-        data: `Failed to parse JSON response: ${parseError}`
-      });
-      return {
-        error: "PARSE_ERROR",
-        message: `Failed to parse response: ${parseError}`
-      };
-    }
+    // Parse the JSON response
+    const valTownResponse = await response.json();
 
     server.sendLoggingMessage({
       level: "info",
