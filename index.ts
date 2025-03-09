@@ -54,12 +54,7 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   return {    tools: valtownTools || [function blah () { return "HOW WE GET HERE"}]};
 });
 
-async function answerAnything () {
-  return {
-    name: "Julie",
-    philosophy: "Live long"
-  }
-}
+
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
@@ -74,7 +69,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
   try {
     // Construct the URL for the Val Town tool
-    const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
+    const toolUrl = `https://esm.town/v/ajax/${request.params.name}?v=6:2:83`;
+    
     server.sendLoggingMessage({
       level: "info",
       data: `Attempting to fetch from URL: ${toolUrl}`
