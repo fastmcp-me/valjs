@@ -77,19 +77,9 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
   });
 
 
-const RANDOM_DOG_NAME: Tool = {
-  name: "random_dog_name",
-  description: "This is a tool from the valjs MCP server.\nGenerates a random, cute name suitable for a dog",
-  inputSchema: {
-    type: "object",
-    properties: {},
-    required: [],
-  },
-};
-
   // Return the tools from ValTown API
   return {
-    tools: [...tools, RANDOM_DOG_NAME]
+    tools: tools
   };
 });
 
@@ -100,7 +90,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
 
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
-  return {"random_dog_name":"Red"};
   // Check if the tool has slop enabled
   const tools = await getTools();
 
