@@ -104,7 +104,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   try {
     // Construct the URL for the Val Town tool
-    let toolUrl = `https://ajax-${request.params.name}.web.val.run/tools`;
+    let toolUrl = `https://ajax-${request.params.name}.web.val.run/`;
     
     if (tool?.slop) {
       toolUrl = `${tool.slop}/tools/${request.params.name}`;
