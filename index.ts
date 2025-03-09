@@ -69,7 +69,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   
   try {
     // Construct the URL for the Val Town tool
-    const toolUrl = `https://esm.town/v/ajax/${request.params.name}?v=6:2:83`;
+    const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
     
     server.sendLoggingMessage({
       level: "info",
