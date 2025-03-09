@@ -10,6 +10,16 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
+async function getTools(): Promise<Tool[]> {
+  const response = await fetch("https://ajax-mcp.web.val.run", {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  return (await response.json() as Tool[]) || [];
+}
+
 const server = new Server(
   {
     name: "valtown-mcp-alpha",
@@ -60,21 +70,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
     data: "Received ListTools request",
   });
 
-  const response = await fetch("https://ajax-mcp.web.val.run", {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  const valtownTools = await response.json();
+  const tools = await getTools();
   server.sendLoggingMessage({
     level: "info",
-    data: `ListTools response received: ${JSON.stringify(valtownTools)}`
+    data: `ListTools response received: ${JSON.stringify(tools)}`
   });
 
   // Return the tools from ValTown API
   return {
-    tools: valtownTools || []
+    tools
   };
 });
 
@@ -82,6 +86,13 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
+
+  // Check if the tool has slop enabled
+  const tools = await getTools();
+
+  console.log({tools})
+  const tool = tools.find((t: Tool) => t.name === request.params.name);
+
   
   // Log the incoming tool call request with detailed information
   server.sendLoggingMessage({
@@ -89,24 +100,48 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     data: `Tool call request received: name='${request.params.name}', arguments=${JSON.stringify(request.params.arguments)}`
   });
 
+  const payload = request.params.arguments;
+
   try {
     // Construct the URL for the Val Town tool
-    const toolUrl = `https://ajax-${request.params.name}.web.val.run`;
+    let toolUrl = `https://ajax-${request.params.name}.web.val.run/tools`;
     
+    if (tool?.slop) {
+      toolUrl = `${tool.slop}/tools/${request.params.name}`;
+      server.sendLoggingMessage({
+        level: "info",
+        data: `SLOP CALL DETECTED`
+      });
+    } 
+
     server.sendLoggingMessage({
       level: "info",
       data: `Attempting to fetch from URL: ${toolUrl}`
     });
     
+    // Log the request details
+    server.sendLoggingMessage({
+      level: "info",
+      data: `Request payload: ${JSON.stringify(payload)}`
+    });
+
     // Make the API request and await the response
     const response = await fetch(toolUrl, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      body: JSON.stringify(request.params.arguments || {})
+      body: JSON.stringify(payload)
     });
     
+    // Log response details
+    const headers = Object.fromEntries(response.headers.entries());
+    server.sendLoggingMessage({
+      level: "info",
+      data: `Response headers: ${JSON.stringify(headers)}`
+    });
+
     server.sendLoggingMessage({
       level: "info",
       data: `Response status: ${response.status} ${response.statusText}`
@@ -126,8 +161,28 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       };
     }
 
-    // Parse the JSON response
-    const valTownResponse = await response.json();
+    // Get the raw response text first
+    const rawResponse = await response.text();
+    server.sendLoggingMessage({
+      level: "info",
+      data: `Raw response text: ${rawResponse}`
+    });
+
+    // Try to parse the JSON response
+    let valTownResponse;
+    try {
+      valTownResponse = JSON.parse(rawResponse);
+    } catch (parseError) {
+      server.sendLoggingMessage({
+        level: "error",
+        data: `Failed to parse JSON response: ${parseError}`
+      });
+      return {
+        error: "PARSE_ERROR",
+        message: `Failed to parse response: ${parseError}`
+      };
+    }
+
     server.sendLoggingMessage({
       level: "info",
       data: `Response parsed: ${JSON.stringify(valTownResponse)}`
