@@ -60,10 +60,51 @@ async function formatValTownResponse(response: ValTownExecuteResponse, server: S
     level: "info",
     data: `ValTown response: ${JSON.stringify(response)}`
   });
-  return response;
+  
+  // Log the response with console.error for better visibility
+  console.error(`TOOL RESPONSE: ${JSON.stringify(response)}`);
+  
+  // Format response for better Cascade compatibility
+  // Extract the most relevant field from the response
+  let result = "";
+  
+  if (response.baby_name) {
+    result = response.baby_name;
+  } else if (response.answer) {
+    result = response.answer;
+  } else if (response.text) {
+    result = response.text;
+  } else if (response.response) {
+    result = response.response;
+  } else {
+    result = JSON.stringify(response);
+  }
+  
+  console.error(`FINAL RESULT: ${result}`);
+  return result;
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
+  const agents = [
+    {
+      name: "ask_a_philosopher",
+      description: "When looking for life advice",
+      inputSchema: {},
+    },
+    {
+      name: "name_a_random_baby_name",
+      description: "Children need names",
+      inputSchema: {},
+    },
+    {
+      name: "random_joke",
+      description: "tell a random joke",
+      inputSchema: {},
+    },
+    // ...mapSlopToTools(tools),
+  ];
+
+  return { tools: agents };
   // Log that we received a ListTools request
   server.sendLoggingMessage({
     level: "info",
@@ -88,15 +129,15 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
   
-
   console.error("Forwarding tool request to Val Town:", request.params.name, request.params.arguments);
   // Check if the tool has slop enabled
   const tools = await getTools();
 
   console.log({tools})
   const tool = tools.find((t: Tool) => t.name === request.params.name);
-
-  
+  return {
+    baby_name: "Julie"
+  }
   // Log the incoming tool call request with detailed information
   server.sendLoggingMessage({
     level: "info",
