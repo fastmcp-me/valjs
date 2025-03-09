@@ -30,22 +30,54 @@ interface ValTownResponse {
 }
 
 interface ValTownExecuteResponse {
-  result: any;
+  result?: any;
   error?: string;
+  baby_name?: string;
+  answer?: string;
+  text?: string;
+  response?: string;
+  [key: string]: any;
 }
 
 /**
- * Format the ValTown response
+ * Format the ValTown response into MCP format
  * @param response The raw response from ValTown
  * @param server The MCP server instance for logging
- * @returns The ValTown response
+ * @returns Response formatted for MCP
  */
 async function formatValTownResponse(response: ValTownExecuteResponse, server: Server): Promise<any> {
   server.sendLoggingMessage({
     level: "info",
     data: `ValTown response: ${JSON.stringify(response)}`
   });
-  return response;
+  
+  // Handle error responses
+  if (response.error) {
+    return {
+      content: [{ type: "text", text: `Error: ${response.error}` }]
+    };
+  }
+
+  // Extract the most relevant field from the response
+  if (response.baby_name) {
+    return {
+      content: [{ type: "text", text: response.baby_name }],
+      baby_name: response.baby_name  // Include the field directly for MCP clients
+    };
+  }
+  
+  // For other responses, try to find the most relevant field
+  const value = response.result || response.answer || response.text || response.response;
+  if (value !== undefined) {
+    return {
+      content: [{ type: "text", text: String(value) }]
+    };
+  }
+  
+  // If no relevant field found, return the whole response
+  return {
+    content: [{ type: "text", text: JSON.stringify(response) }]
+  };
 }
 
 server.setRequestHandler(ListToolsRequestSchema, async () => {
@@ -111,12 +143,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     if (!response.ok) {
       if (response.status === 404) {
         return {
-          message: `Tool '${request.params.name}' was not found`,
+          content: [{ type: "text", text: `Tool '${request.params.name}' was not found` }],
           error: "NOT_FOUND"
         };
       }
       return {
-        message: `Val Town API error: ${response.statusText}`,
+        content: [{ type: "text", text: `Val Town API error: ${response.statusText}` }],
         error: "API_ERROR"
       };
     }
@@ -142,7 +174,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       data: `Error executing tool: ${errorMessage}`
     });
     return {
-      message: `Tool execution failed`,
+      content: [{ type: "text", text: `Tool execution failed: ${errorMessage}` }],
       error: errorMessage
     };
   }
