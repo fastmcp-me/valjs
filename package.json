@@ -1,6 +1,6 @@
 {
-  "name": "valjs-mcp",
-  "version": "1.0.1",
+  "name": "valjs-mcp-blah",
+  "version": "1.0.2",
   "description": "Simple MCP server for Val Town tools",
   "type": "module",
   "private": false,
