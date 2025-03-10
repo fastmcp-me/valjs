@@ -1,38 +1,19 @@
 {
-  "name": "valjs-mcp-alpha",
-  "version": "6.0.0",
-  "description": "ModelContextProtocol server that bridges to Val Town MCP tools",
+  "name": "valjs-mcp",
+  "version": "1.0.0",
+  "description": "Simple MCP server for Val Town tools",
   "type": "module",
   "private": false,
   "scripts": {
-    "make-executable": "node -e \"fs.chmodSync('dist/index.cjs', '755');\" --require fs",
-    "build": "esbuild index.ts --outfile=dist/index.cjs --bundle --platform=node --format=cjs --banner:js='#!/usr/bin/env node' && npm run make-executable",
-    "watch": "esbuild index.ts --outfile=dist/index.cjs --bundle --platform=node --format=cjs --banner:js='#!/usr/bin/env node' --watch",
-    "inspect": "npx @modelcontextprotocol/inspector node dist/index.cjs",
-    "dev": "concurrently \"npm run watch\" \"npm run inspect\"",
-    "start": "node dist/index.cjs",
-    "prepublishOnly": "npm run build"
+    "build": "esbuild index.ts --outfile=dist/index.cjs --bundle --platform=node --format=cjs",
+    "start": "node dist/index.cjs"
   },
-  "bin": {
-    "valjs-mcp-alpha": "./dist/index.cjs"
-  },
-  "files": [
-    "dist"
-  ],
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.0.3",
-    "axios": "^1.8.1",
-    "node-fetch": "^3.3.2",
-    "octokit": "^3.2.1",
-    "openai": "^4.86.1"
+    "@modelcontextprotocol/sdk": "^1.0.3"
   },
   "devDependencies": {
     "@types/node": "^22.10.1",
-    "concurrently": "^8.2.2",
     "esbuild": "^0.24.0",
-    "prettier": "^3.4.2",
-    "ts-node": "^10.9.2",
-    "tsx": "^4.19.3",
     "typescript": "^5.3.3"
   }
 }
