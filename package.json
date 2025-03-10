@@ -1,12 +1,13 @@
 {
   "name": "valjs-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Simple MCP server for Val Town tools",
   "type": "module",
   "private": false,
   "scripts": {
     "build": "esbuild index.ts --outfile=dist/index.cjs --bundle --platform=node --format=cjs",
-    "start": "node dist/index.cjs"
+    "start": "node dist/index.cjs",
+    "publish-all": "./publish.sh"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.3"
